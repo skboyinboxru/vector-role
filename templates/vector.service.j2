@@ -1,0 +1,15 @@
+[Unit]
+Description=Vector Service
+Documentation=https://vector.dev
+After=network.target
+
+[Service]
+Type=simple
+User={{ vector_user }}
+Group={{ vector_group }}
+ExecStart={{ vector_bin_path }} --config {{ vector_config_dir }}/vector.yml
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

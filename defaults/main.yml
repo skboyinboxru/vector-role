@@ -1,0 +1,17 @@
+---
+vector_version: "0.28.0"
+
+vector_install_dir: "/opt/vector"
+vector_config_dir: "/etc/vector"
+vector_bin_path: "/usr/local/bin/vector"
+
+vector_user: "vector"
+vector_group: "vector"
+
+clickhouse_host: "localhost"
+clickhouse_port: 8123
+clickhouse_database: "default"
+clickhouse_table: "logs"
+
+vector_api_enabled: true
+vector_api_address: "0.0.0.0:8686"
