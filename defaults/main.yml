@@ -15,3 +15,4 @@ clickhouse_table: "logs"
 
 vector_api_enabled: true
 vector_api_address: "0.0.0.0:8686"
+vector_configure_firewall: false
