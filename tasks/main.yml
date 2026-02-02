@@ -52,7 +52,7 @@
 
 - name: Install Vector binary
   copy:
-    src: "{{ vector_tmp_dir }}/vector-{{ vector_version }}/bin/vector"
+    src: "{{ vector_tmp_dir }}/{{ vector_extracted_dir }}/bin/vector"
     dest: "{{ vector_bin_path }}"
     owner: root
     group: root
