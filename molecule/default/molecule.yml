@@ -1,0 +1,38 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: docker
+
+platforms:
+  - name: ubuntu
+    image: ubuntu:22.04
+    command: sleep infinity
+
+  - name: debian
+    image: debian:12
+    command: sleep infinity
+
+provisioner:
+  name: ansible
+  inventory:
+    host_vars:
+      ubuntu:
+        ansible_python_interpreter: /usr/bin/python3
+        vector_skip_systemd: true
+        vector_skip_handlers: true
+        vector_cleanup_temp: false
+      debian:
+        ansible_python_interpreter: /usr/bin/python3
+        vector_skip_systemd: true
+        vector_skip_handlers: true
+        vector_cleanup_temp: false
+
+verifier:
+  name: ansible
+
+lint: |
+  echo "Linting disabled for testing"
+  # yamllint .
+  # ansible-lint

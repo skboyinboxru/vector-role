@@ -1,23 +1,49 @@
 ---
-- name: Install required packages for CentOS 7
-  yum:
-    name:
-      - curl
-      - tar
-      - gzip
+- name: Install required packages
+  block:
+    - name: Install packages for RHEL/CentOS
+      ansible.builtin.yum:
+        name:
+          - curl
+          - tar
+          - gzip
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Install packages for Debian/Ubuntu
+      ansible.builtin.apt:
+        name:
+          - curl
+          - tar
+          - gzip
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+  tags:
+    - vector
+    - install
+
+- name: Create Vector group
+  ansible.builtin.group:
+    name: "{{ vector_group }}"
     state: present
-  tags: vector
+    system: yes
+  tags:
+    - vector
+    - user
 
 - name: Create Vector system user
-  user:
+  ansible.builtin.user:
     name: "{{ vector_user }}"
     group: "{{ vector_group }}"
     system: yes
     create_home: no
-  tags: vector
+  tags:
+    - vector
+    - user
 
 - name: Create Vector directories
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: directory
     owner: "{{ vector_user }}"
@@ -27,51 +53,65 @@
     - "{{ vector_install_dir }}"
     - "{{ vector_config_dir }}"
     - "/var/log/vector"
-  tags: vector
+  tags:
+    - vector
+    - directories
 
 - name: Create temporary directory for download
-  file:
+  ansible.builtin.file:
     path: "{{ vector_tmp_dir }}"
     state: directory
     mode: '0755'
-  tags: vector
+  tags:
+    - vector
+    - download
 
 - name: Download Vector
-  get_url:
+  ansible.builtin.get_url:
     url: "{{ vector_download_url }}"
     dest: "{{ vector_tmp_dir }}/vector.tar.gz"
     validate_certs: no
-  tags: vector
+    force: no
+  tags:
+    - vector
+    - download
 
 - name: Extract Vector
-  unarchive:
+  ansible.builtin.unarchive:
     src: "{{ vector_tmp_dir }}/vector.tar.gz"
     dest: "{{ vector_tmp_dir }}"
     remote_src: yes
-  tags: vector
+    creates: "{{ vector_tmp_dir }}/{{ vector_extracted_dir }}/bin/vector"
+  tags:
+    - vector
+    - extract
 
 - name: Install Vector binary
-  copy:
+  ansible.builtin.copy:
     src: "{{ vector_tmp_dir }}/{{ vector_extracted_dir }}/bin/vector"
     dest: "{{ vector_bin_path }}"
     owner: root
     group: root
     mode: '0755'
     remote_src: yes
-  tags: vector
+  tags:
+    - vector
+    - install
 
 - name: Configure Vector
-  template:
+  ansible.builtin.template:
     src: vector.yml.j2
     dest: "{{ vector_config_dir }}/vector.yml"
     owner: "{{ vector_user }}"
     group: "{{ vector_group }}"
     mode: '0644'
   notify: restart vector
-  tags: vector
+  tags:
+    - vector
+    - config
 
 - name: Create systemd service
-  template:
+  ansible.builtin.template:
     src: vector.service.j2
     dest: /etc/systemd/system/vector.service
     owner: root
@@ -80,26 +120,39 @@
   notify:
     - daemon-reload
     - restart vector
-  tags: vector
+  when: not vector_skip_systemd | bool
+  tags:
+    - vector
+    - service
 
-- name: Configure firewalld
-  firewalld:
+- name: Configure firewalld for Vector API
+  ansible.posix.firewalld:
     port: "8686/tcp"
     permanent: yes
     state: enabled
     immediate: yes
-  when: ansible_os_family == "RedHat" and vector_api_enabled
-  tags: vector
+  when: 
+    - ansible_os_family == "RedHat"
+    - vector_api_enabled | bool
+  tags:
+    - vector
+    - firewall
+
 - name: Enable and start Vector service
-  systemd:
+  ansible.builtin.systemd:
     name: vector
     state: started
     enabled: yes
-  tags: vector
+  when: not vector_skip_systemd | bool
+  tags:
+    - vector
+    - service
 
-- name: Clean up temporary files
-  file:
+- name: Clean up temporary files (optional)
+  ansible.builtin.file:
     path: "{{ vector_tmp_dir }}"
     state: absent
-  tags: vector
-
+  when: vector_cleanup_temp | default(true)
+  tags:
+    - vector
+    - cleanup

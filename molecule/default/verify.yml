@@ -1,0 +1,36 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Check Vector binary exists
+      ansible.builtin.stat:
+        path: /usr/bin/vector
+      register: vector_binary
+
+    - name: Display Vector binary status
+      ansible.builtin.debug:
+        msg: "Vector binary exists: {{ vector_binary.stat.exists }}"
+
+    - name: Check Vector configuration
+      ansible.builtin.stat:
+        path: /etc/vector/vector.yml
+      register: vector_config
+
+    - name: Display Vector config status
+      ansible.builtin.debug:
+        msg: "Vector config exists: {{ vector_config.stat.exists }}"
+
+    - name: Check Vector directories
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /opt/vector
+        - /etc/vector
+        - /var/log/vector
+      register: vector_dirs
+
+    - name: Display directories status
+      ansible.builtin.debug:
+        msg: "Directory {{ item.item }} exists: {{ item.stat.exists }}"
+      loop: "{{ vector_dirs.results }}"

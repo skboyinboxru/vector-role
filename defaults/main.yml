@@ -1,19 +1,37 @@
 ---
-vector_version: "0.28.0"
+# Vector version
+vector_version: "0.36.0"
 
-vector_install_dir: "/opt/vector"
-vector_config_dir: "/etc/vector"
-vector_bin_path: "/usr/local/bin/vector"
-
+# User and group
 vector_user: "vector"
 vector_group: "vector"
 
+# Directories
+vector_install_dir: "/opt/vector"
+vector_config_dir: "/etc/vector"
+vector_tmp_dir: "/tmp/vector_download"
+
+# Download settings
+vector_download_url: "https://packages.timber.io/vector/{{ vector_version }}/vector-{{ vector_version }}-x86_64-unknown-linux-gnu.tar.gz"
+vector_extracted_dir: "vector-{{ vector_version }}"
+
+# Binary path
+vector_bin_path: "/usr/bin/vector"
+
+# API settings
+vector_api_enabled: false
+vector_api_address: "127.0.0.1:8686"
+
+# Service control
+vector_skip_systemd: false  # Можно переопределить в molecule
+
+# ClickHouse settings (optional)
+clickhouse_enabled: false
 clickhouse_host: "localhost"
-clickhouse_port: 8123
+clickhouse_port: 9000
 clickhouse_database: "default"
 clickhouse_table: "logs"
+clickhouse_user: "default"
+clickhouse_password: ""
 
-vector_api_enabled: true
-vector_api_address: "0.0.0.0:8686"
-vector_configure_firewall: false
-vector_api_enabled: false
+vector_cleanup_temp: false

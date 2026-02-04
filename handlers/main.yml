@@ -1,9 +1,16 @@
 ---
 - name: daemon-reload
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: yes
+  when: not vector_skip_systemd | bool
 
 - name: restart vector
-  systemd:
+  ansible.builtin.systemd:
     name: vector
     state: restarted
+  when: not vector_skip_systemd | bool
+
+- name: skip handlers (for testing)
+  meta: noop
+  when: vector_skip_systemd | bool
+  tags: always
