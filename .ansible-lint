@@ -1,0 +1,20 @@
+---
+# List of rules to skip for all files
+skip_list:
+  - yaml  # yamllint handles this
+  - no-changed-when  # raw modules require this
+  - fqcn  # We use short names
+  - name  # We might have duplicate names in tests
+  - command-instead-of-module  # Sometimes necessary
+
+# Paths to ignore
+exclude_paths:
+  - .tox/
+  - tests/
+  - molecule/*/roles/
+  - "*.j2"
+
+# Increase line length limit
+parseable: true
+quiet: true
+verbosity: 0
